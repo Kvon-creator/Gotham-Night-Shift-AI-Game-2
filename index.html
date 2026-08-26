@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gotham Night Shift</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #090b10;
+  color: #e8e8e8;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.wrap {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+
+header {
+  border-bottom: 1px solid #343844;
+  padding-bottom: 15px;
+  margin-bottom: 18px;
+}
+
+h1 {
+  margin: 0 0 5px;
+  font-size: 30px;
+  letter-spacing: 2px;
+}
+
+.sub {
+  color: #9298a7;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 16px;
+}
+
+.panel {
+  background: #11141c;
+  border: 1px solid #292e3b;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 10px 30px #0006;
+}
+
+.scene {
+  min-height: 430px;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 20px;
+}
+
+.location {
+  color: #8fb7ff;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.clue {
+  background: #181c25;
+  border-left: 3px solid #8fb7ff;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 5px;
+}
+
+.choices {
+  display: grid;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+button {
+  background: #202634;
+  color: #fff;
+  border: 1px solid #3a4253;
+  padding: 11px 13px;
+  border-radius: 7px;
+  cursor: pointer;
+  text-align: left;
+}
+
+button:hover {
+  background: #2b3344;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #252a34;
+}
+
+.bar {
+  height: 7px;
+  background: #242936;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 5px;
+}
+
+.fill {
+  height: 100%;
+  background: #8fb7ff;
+}
+
+.evidence {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.tag {
+  background: #222938;
+  border: 1px solid #3a4253;
+  padding: 5px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.board {
+  min-height: 160px;
+}
+
+.link {
+  margin: 8px 0;
+  padding: 8px;
+  background: #191e28;
+  border-radius: 6px;
+}
+
+.success {
+  color: #8fe0a5;
+}
+
+.danger {
+  color: #ff8c8c;
+}
+
+.muted {
+  color: #9298a7;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.ending {
+  text-align: center;
+  padding: 30px;
+  animation: fadeIn 0.7s ease-out;
+}
+
+.ending h2 {
+  font-size: 27px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   FULL SCREEN SCREENS
+========================= */
+
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #06080d;
+}
+
+.screen.hidden {
+  display: none;
+}
+
+/* =========================
+   MAIN MENU
+========================= */
+
+.city-bg {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(5, 7, 12, 0.25),
+      rgba(5, 7, 12, 0.98)
+    ),
+    radial-gradient(
+      circle at 50% 28%,
+      rgba(91, 118, 165, 0.16),
+      transparent 42%
+    );
+}
+
+.skyline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 48%;
+
+  filter: drop-shadow(
+    0 -3px 10px rgba(120, 150, 190, 0.08)
+  );
+}
+
+.building {
+  position: absolute;
+  bottom: 0;
+  background: #030509;
+  border-top: 1px solid #171d28;
+}
+
+.building::before {
+  content: "";
+  position: absolute;
+  inset: 10px 8px;
+
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 14px,
+      #171d28 15px 16px
+    ),
+    repeating-linear-gradient(
+      to right,
+      transparent 0 17px,
+      #171d28 18px 19px
+    );
+
+  opacity: 0.35;
+}
+
+.spire {
+  position: absolute;
+  bottom: 100%;
+  left: 48%;
+  width: 4px;
+  height: 90px;
+  background: #030509;
+}
+
+.menu-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  width: min(90%, 700px);
+  padding: 30px;
+}
+
+.menu-kicker {
+  font-size: 13px;
+  letter-spacing: 5px;
+  color: #8fb7ff;
+  margin-bottom: 14px;
+}
+
+.menu-title {
+  font-size: clamp(42px, 8vw, 82px);
+  letter-spacing: 8px;
+  margin: 0;
+  text-shadow: 0 4px 25px #000;
+}
+
+.menu-subtitle {
+  color: #9da5b5;
+  margin: 12px 0 30px;
+  font-size: 15px;
+}
+
+.start-button,
+.continue-button,
+.finalize-button,
+.back-button {
+  border-radius: 4px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: bold;
+}
+
+.start-button {
+  padding: 15px 42px;
+  font-size: 15px;
+  background: #202b3e;
+  border-color: #6684b4;
+  box-shadow: 0 0 25px #3d5b8560;
+}
+
+.start-button:hover {
+  background: #2d3c55;
+  transform: translateY(-1px);
+}
+
+/* =========================
+   BRIEFING SCREEN
+========================= */
+
+.briefing {
+  justify-content: flex-start;
+  padding: 7vh 8vw;
+
+  background:
+    linear-gradient(
+      120deg,
+      #080b12,
+      #101722
+    );
+}
+
+.briefing-card {
+  max-width: 760px;
+
+  background: #0d1119ef;
+
+  border: 1px solid #303746;
+
+  padding: 36px;
+
+  box-shadow: 0 20px 60px #0009;
+}
+
+.briefing-card h2 {
+  font-size: 34px;
+  margin: 8px 0 16px;
+}
+
+.briefing-card p {
+  line-height: 1.7;
+  color: #c2c7d2;
+}
+
+.briefing-objective {
+  margin-top: 22px;
+
+  border-left: 3px solid #8fb7ff;
+
+  padding: 12px 16px;
+
+  background: #161c27;
+}
+
+.continue-button {
+  margin-top: 28px;
+
+  padding: 13px 24px;
+
+  background: #202b3e;
+  border-color: #6684b4;
+}
+
+.continue-button:hover {
+  background: #2d3c55;
+}
+
+/* =========================
+   FINALIZATION
+========================= */
+
+.finalize-panel {
+  margin-top: 20px;
+
+  padding: 16px;
+
+  border: 1px solid #3b4558;
+
+  background: #151a24;
+
+  border-radius: 8px;
+}
+
+.finalize-panel p {
+  color: #b7bdc9;
+  line-height: 1.55;
+}
+
+.finalize-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.finalize-button {
+  background: #26384f;
+  border-color: #7897c5;
+}
+
+.back-button {
+  background: #1b202a;
+}
+
+.finalize-button:hover {
+  background: #334a68;
+}
+
+.back-button:hover {
+  background: #292f3b;
+}
+
+/* =========================
+   FINAL REPORT
+========================= */
+
+.case-report {
+  max-width: 850px;
+  margin: auto;
+}
+
+.case-report .clue {
+  text-align: left;
+}
+
+.ending-choice {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.ending-choice button {
+  text-align: center;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .briefing {
+    padding: 5vh 5vw;
+  }
+
+  .briefing-card {
+    padding: 24px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     MAIN MENU
+========================= -->
+
+<div id="mainMenu" class="screen">
+
+  <div class="city-bg">
+
+    <div class="skyline">
+
+      <div
+        class="building"
+        style="left:0;width:8%;height:44%"
+      ></div>
+
+      <div
+        class="building"
+        style="left:7%;width:9%;height:65%"
+      ></div>
+
+      <div
+        class="building"
+        style="left:15%;width:7%;height:39%"
+      ></div>
+
+      <div
+        class="building"
+        style="left:21%;width:11%;height:76%"
+      >
+        <div class="spire"></div>
+      </div>
+
+      <div
+        class="building"
+        style="left:31%;width:8%;height:52%"
+      ></div>
+
+      <div
+        class="building"
+        style="left:38%;width:13%;height:88%"
+      >
+        <div class="spire"></div>
+      </div>
+
+      <div
+        class="building"
+        style="left:50%;width:8%;height:46%"
+      ></div>
+
+      <div
+        class="building"
+        style="left:57%;width:12%;height:70%"
+      ></div>
+
+      <div
+        class="building"
+        style="left:68%;width:8%;height:56%"
+      ></div>
+
+      <div
+        class="building"
+        style="left:75%;width:12%;height:82%"
+      >
+        <div class="spire"></div>
+      </div>
+
+      <div
+        class="building"
+        style="left:86%;width:7%;height:48%"
+      ></div>
+
+      <div
+        class="building"
+        style="left:92%;width:10%;height:63%"
+      ></div>
+
+    </div>
+
+  </div>
+
+  <div class="menu-content">
+
+    <div class="menu-kicker">
+      GOTHAM POLICE DEPARTMENT
+    </div>
+
+    <h1 class="menu-title">
+      GOTHAM<br>
+      NIGHT SHIFT
+    </h1>
+
+    <div class="menu-subtitle">
+      CASE 01 • THE BLACK LANTERN
+    </div>
+
+    <button
+      class="start-button"
+      onclick="showBriefing()"
+    >
+      START GAME
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- =========================
+     CASE BRIEFING
+========================= -->
+
+<div
+  id="briefingScreen"
+  class="screen briefing hidden"
+>
+
+  <div class="briefing-card">
+
+    <div class="location">
+      CASE BRIEFING • 10:58 PM
+    </div>
+
+    <h2>
+      The Black Lantern
+    </h2>
+
+    <p>
+      Elias Vane, a local accountant, has been
+      found dead in a locked service alley.
+      The scene doesn't add up, and the patrol
+      officer assigned to it isn't telling you
+      everything.
+    </p>
+
+    <div class="briefing-objective">
+
+      <strong>
+        YOUR OBJECTIVE
+      </strong>
+
+      <br>
+
+      Investigate the scene, collect evidence,
+      connect the clues, and determine who is
+      responsible before the trail disappears
+      into Gotham's night.
+
+    </div>
+
+    <p>
+      Your conclusions matter. The final report
+      will be based on the evidence you collect
+      and the theories you choose to connect.
+    </p>
+
+    <button
+      class="continue-button"
+      onclick="startInvestigation()"
+    >
+      CONTINUE
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- =========================
+     MAIN GAME
+========================= -->
+
+<div class="wrap">
+
+<header class="hidden">
+
+  <h1>
+    GOTHAM NIGHT SHIFT
+  </h1>
+
+  <div class="sub">
+    A detective mystery prototype •
+    Case 01: The Black Lantern
+  </div>
+
+</header>
+
+
+<div
+  id="game"
+  class="layout hidden"
+>
+
+<main class="panel scene">
+
+  <div
+    id="location"
+    class="location"
+  ></div>
+
+  <h2 id="title"></h2>
+
+  <p id="text"></p>
+
+  <div id="clues"></div>
+
+  <div
+    id="choices"
+    class="choices"
+  ></div>
+
+</main>
+
+
+<aside class="panel">
+
+  <h2>
+    Detective File
+  </h2>
+
+  <div class="stat">
+    <span>Time</span>
+    <strong id="time">
+      11:00 PM
+    </strong>
+  </div>
+
+  <div class="stat">
+    <span>Case Progress</span>
+    <strong id="progress">
+      0%
+    </strong>
+  </div>
+
+  <div class="stat">
+    <span>Reputation</span>
+    <strong id="rep">
+      0
+    </strong>
+  </div>
+
+  <div style="margin:8px 0 16px">
+
+    <div class="bar">
+
+      <div
+        id="progressBar"
+        class="fill"
+        style="width:0%"
+      ></div>
+
+    </div>
+
+  </div>
+
+
+  <h3>
+    Evidence Collected
+  </h3>
+
+  <div
+    id="evidence"
+    class="evidence"
+  >
+
+    <span class="muted">
+      Nothing yet.
+    </span>
+
+  </div>
+
+
+  <h3>
+    Link Board
+  </h3>
+
+  <div
+    id="board"
+    class="board"
+  >
+
+    <span class="muted">
+      Connect clues to build a theory.
+    </span>
+
+  </div>
+
+
+  <!-- FINALIZATION PROMPT -->
+
+  <div
+    id="finalizePanel"
+    class="finalize-panel hidden"
+  >
+
+    <strong>
+      INVESTIGATION READY
+    </strong>
+
+    <p>
+      You have assembled your available
+      evidence. Are you ready to finalize
+      your investigation?
+    </p>
+
+    <div class="finalize-actions">
+
+      <button
+        class="finalize-button"
+        onclick="finalizeInvestigation()"
+      >
+        FINALIZE INVESTIGATION
+      </button>
+
+      <button
+        class="back-button"
+        onclick="returnToInvestigation()"
+      >
+        GO BACK &amp; CHANGE SOMETHING
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <button
+    id="reset"
+    style="width:100%;margin-top:10px"
+  >
+    Restart Case
+  </button>
+
+</aside>
+
+</div>
+
+
+<!-- FINAL CONCLUSION -->
+
+<div
+  id="conclusion"
+  class="screen briefing hidden"
+></div>
+
+
+<div
+  id="ending"
+  class="panel ending hidden"
+></div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   GAME STATE
+========================= */
+
+const state = {
+
+  node: "scene",
+
+  time: 23 * 60,
+
+  rep: 0,
+
+  evidence: [],
+
+  links: [],
+
+  flags: {},
+
+  boardReady: false,
+
+  done: false
+
+};
+
+
+/* =========================
+   INVESTIGATION SCENES
+========================= */
+
+const scenes = {
+
+  scene: {
+
+    location:
+      "Crime Scene • Black Lantern Alley",
+
+    title:
+      "Rain, blood, and a locked door",
+
+    text:
+      "A local accountant, Elias Vane, is dead behind a locked service door. There are no obvious signs of forced entry. A police officer waits for your report, but something about the scene feels staged.",
+
+    clues: [
+
+      "The victim's watch stopped at 10:42 PM.",
+
+      "A black thread is caught on the door latch.",
+
+      "There is a faint chemical smell near the body."
+
+    ],
+
+    choices: [
+
+      ["Inspect the body", "body"],
+
+      ["Examine the door and lock", "door"],
+
+      ["Search the alley", "alley"]
+
+    ]
+
+  },
+
+
+  body: {
+
+    location:
+      "Crime Scene",
+
+    title:
+      "Something was taken",
+
+    text:
+      "The victim has a shallow wound, but it isn't what killed him. A tiny puncture is visible behind his ear. His wallet is untouched. A folded receipt is hidden inside his sleeve.",
+
+    clues: [
+
+      "Receipt: 'Mercy Docks — Storage 17'",
+
+      "Tiny puncture behind the ear",
+
+      "Wallet untouched"
+
+    ],
+
+    evidence: [
+
+      "Receipt: Mercy Docks",
+
+      "Puncture wound"
+
+    ],
+
+    choices: [
+
+      ["Go to Mercy Docks", "docks"],
+
+      ["Return to the door", "door"],
+
+      ["Question the patrol officer", "officer"]
+
+    ]
+
+  },
+
+
+  door: {
+
+    location:
+      "Crime Scene • Service Door",
+
+    title:
+      "A lock with no break-in",
+
+    text:
+      "The lock is intact, but the black thread matches a cheap suit fabric. You notice a nearly invisible smear around the keyhole. It smells like industrial lubricant.",
+
+    clues: [
+
+      "Black suit thread",
+
+      "Lubricant smear",
+
+      "No forced entry"
+
+    ],
+
+    evidence: [
+
+      "Black suit thread",
+
+      "Lubricant smear"
+
+    ],
+
+    choices: [
+
+      ["Inspect the alley", "alley"],
+
+      ["Question the patrol officer", "officer"],
+
+      ["Return to the body", "body"]
+
+    ]
+
+  },
+
+
+  alley: {
+
+    location:
+      "Black Lantern Alley",
+
+    title:
+      "Footprints in the rain",
+
+    text:
+      "Fresh rain has erased most tracks, but one set of heavy boot prints leads toward a maintenance gate. Near it sits a torn security badge.",
+
+    clues: [
+
+      "Heavy boot prints",
+
+      "Torn badge: GCPD Auxiliary",
+
+      "Gate leads toward the waterfront"
+
+    ],
+
+    evidence: [
+
+      "GCPD Auxiliary badge",
+
+      "Boot prints"
+
+    ],
+
+    choices: [
+
+      ["Question the patrol officer", "officer"],
+
+      ["Follow the waterfront route", "docks"],
+
+      ["Return to the body", "body"]
+
+    ]
+
+  },
+
+
+  officer: {
+
+    location:
+      "Crime Scene",
+
+    title:
+      "The patrol officer gets defensive",
+
+    text:
+      "Officer Mercer claims he arrived after the murder. When you mention the auxiliary badge, he becomes visibly nervous. He says the badge must have belonged to someone from an old security detail.",
+
+    clues: [
+
+      "Mercer avoids eye contact.",
+
+      "His boots match the alley prints.",
+
+      "He knows about the badge before you show it."
+
+    ],
+
+    choices: [
+
+      ["Accuse Mercer", "accuse"],
+
+      ["Pretend to believe him", "trust"],
+
+      ["Ask about Mercy Docks", "docks"]
+
+    ]
+
+  },
+
+
+  docks: {
+
+    location:
+      "Mercy Docks • Storage 17",
+
+    title:
+      "The second crime scene",
+
+    text:
+      "Storage 17 is unlocked. Inside you find boxes of stolen medical equipment and a wall covered in photographs of city officials. One photograph has Elias Vane circled in red.",
+
+    clues: [
+
+      "Stolen medical equipment",
+
+      "Photos of city officials",
+
+      "Vane's photograph is circled"
+
+    ],
+
+    evidence: [
+
+      "Stolen medical equipment",
+
+      "Conspiracy wall"
+
+    ],
+
+    choices: [
+
+      ["Search the desk", "desk"],
+
+      ["Call for backup", "backup"],
+
+      ["Confront the person outside", "warehouse"]
+
+    ]
+
+  },
+
+
+  desk: {
+
+    location:
+      "Mercy Docks • Storage 17",
+
+    title:
+      "The ledger",
+
+    text:
+      "A hidden ledger lists payments to an organization called NIGHTFALL. Several payments are signed with the initials M.M. One final entry reads: 'Vane became unreliable. Remove him.'",
+
+    clues: [
+
+      "NIGHTFALL ledger",
+
+      "Initials: M.M.",
+
+      "Vane was targeted for becoming unreliable"
+
+    ],
+
+    evidence: [
+
+      "NIGHTFALL ledger",
+
+      "Initials M.M."
+
+    ],
+
+    choices: [
+
+      ["Confront the person outside", "warehouse"],
+
+      ["Call for backup", "backup"],
+
+      ["Build a theory", "board"]
+
+    ]
+
+  },
+
+
+  backup: {
+
+    location:
+      "Mercy Docks",
+
+    title:
+      "No one answers",
+
+    text:
+      "You call the precinct. Static. Then a short message comes through: 'Don't trust the radio.' Someone is interfering with police communications.",
+
+    clues: [
+
+      "Police communications are compromised",
+
+      "Someone knows your investigation"
+
+    ],
+
+    evidence: [
+
+      "Compromised radio"
+
+    ],
+
+    choices: [
+
+      ["Confront the person outside", "warehouse"],
+
+      ["Build a theory", "board"]
+
+    ]
+
+  },
+
+
+  warehouse: {
+
+    location:
+      "Mercy Docks • Loading Yard",
+
+    title:
+      "The suspect runs",
+
+    text:
+      "A masked figure spots you and bolts. You chase them through the loading yard. You can tackle them now, or let them run and follow them to whoever is giving the orders.",
+
+    choices: [
+
+      ["Tackle the suspect", "tackle"],
+
+      ["Let them run", "follow"]
+
+    ]
+
+  },
+
+
+  tackle: {
+
+    location:
+      "Loading Yard",
+
+    title:
+      "You caught the courier",
+
+    text:
+      "The courier drops a phone. The lock screen shows a message from 'M.M.': 'Mercer says the detective is asking questions.' You have your suspect—but the message suggests someone inside the police department is directing the operation.",
+
+    evidence: [
+
+      "Courier phone",
+
+      "Message from M.M."
+
+    ],
+
+    choices: [
+
+      ["Build a theory", "board"]
+
+    ]
+
+  },
+
+
+  follow: {
+
+    location:
+      "Waterfront",
+
+    title:
+      "The trail leads higher",
+
+    text:
+      "You follow the courier without being seen. They enter a black sedan. Through the windshield you recognize Commissioner Mallory, a respected figure at the precinct. The courier hands her the ledger.",
+
+    evidence: [
+
+      "Commissioner Mallory sighting",
+
+      "Courier met Mallory"
+
+    ],
+
+    choices: [
+
+      ["Confront Mallory", "mallory"],
+
+      ["Build a theory", "board"]
+
+    ]
+
+  },
+
+
+  mallory: {
+
+    location:
+      "Waterfront",
+
+    title:
+      "The commissioner turns",
+
+    text:
+      "Mallory sees you. Her expression changes immediately. She reaches for a weapon, but you already have enough evidence to expose NIGHTFALL. The case is no longer just a murder investigation—it is a corruption scandal reaching the top of the department.",
+
+    choices: [
+
+      ["Build a theory", "board"]
+
+    ]
+
+  },
+
+
+  accuse: {
+
+    location:
+      "Crime Scene",
+
+    title:
+      "Too soon",
+
+    text:
+      "You accuse Mercer without enough evidence. He reaches for his radio and calls you in as a suspect interfering with an active investigation. You lose the scene and the trail goes cold.",
+
+    choices: [
+
+      ["Try again", "scene"]
+
+    ]
+
+  },
+
+
+  trust: {
+
+    location:
+      "Crime Scene",
+
+    title:
+      "A dangerous bluff",
+
+    text:
+      "You pretend to believe Mercer. He relaxes and accidentally reveals that he knows the victim visited Mercy Docks. You now have enough to continue, but Mercer realizes you are watching him.",
+
+    evidence: [
+
+      "Mercer knows about Mercy Docks"
+
+    ],
+
+    choices: [
+
+      ["Go to Mercy Docks", "docks"]
+
+    ]
+
+  },
+
+
+  board: {
+
+    location:
+      "Detective's Link Board",
+
+    title:
+      "Build the theory",
+
+    text:
+      "You spread the evidence across the board. Connect the clues you believe belong together. Once you have enough conclusions, you can review your investigation and decide whether to finalize it.",
+
+    choices: [
+
+      [
+        "Connect the murder to NIGHTFALL",
+        "linkNightfall"
+      ],
+
+      [
+        "Connect Mercer to the murder",
+        "linkMercer"
+      ],
+
+      [
+        "Connect the conspiracy to Commissioner Mallory",
+        "linkMallory"
+      ],
+
+      [
+        "Review my investigation",
+        "reviewBoard"
+      ]
+
+    ]
+
+  },
+
+
+  linkNightfall: {
+
+    location:
+      "Link Board",
+
+    title:
+      "Connection established",
+
+    text:
+      "Vane was killed because he became unreliable. NIGHTFALL wanted him removed. The stolen equipment and ledger prove the organization is real.",
+
+    choices: [
+
+      [
+        "Continue connecting clues",
+        "board"
+      ]
+
+    ]
+
+  },
+
+
+  linkMercer: {
+
+    location:
+      "Link Board",
+
+    title:
+      "Connection established",
+
+    text:
+      "The badge, boots, and Mercer's behavior make him a likely participant, but they don't prove he ordered the murder.",
+
+    choices: [
+
+      [
+        "Continue connecting clues",
+        "board"
+      ]
+
+    ]
+
+  },
+
+
+  linkMallory: {
+
+    location:
+      "Link Board",
+
+    title:
+      "The missing piece",
+
+    text:
+      "The initials M.M., the compromised police radio, and the courier's meeting point toward Commissioner Mallory. If you followed the courier, you have direct confirmation.",
+
+    choices: [
+
+      [
+        "Return to the Link Board",
+        "board"
+      ]
+
+    ]
+
+  },
+
+
+  reviewBoard: {
+
+    location:
+      "Detective's Link Board",
+
+    title:
+      "Review your investigation",
+
+    text:
+      "Your board is complete enough to form a final theory. Review your conclusions before submitting the case.",
+
+    choices: [
+
+      [
+        "Return to the evidence",
+        "board"
+      ]
+
+    ]
+
+  }
+
+};
+
+
+/* =========================
+   EVIDENCE
+========================= */
+
+function addEvidence(items = []) {
+
+  items.forEach(item => {
+
+    if (!state.evidence.includes(item)) {
+
+      state.evidence.push(item);
+
+    }
+
+  });
+
+}
+
+
+/* =========================
+   TIME
+========================= */
+
+function minutesToTime(minutes) {
+
+  minutes %= 1440;
+
+  let hours =
+    Math.floor(minutes / 60);
+
+  let mins =
+    minutes % 60;
+
+  let period =
+    hours >= 12 ? "PM" : "AM";
+
+  let displayHours =
+    hours % 12 || 12;
+
+  return `${displayHours}:${String(mins).padStart(2, "0")} ${period}`;
+
+}
+
+
+/* =========================
+   PROGRESS
+========================= */
+
+function progress() {
+
+  return Math.min(
+    100,
+    Math.round(
+      (state.evidence.length / 10) * 100
+    )
+  );
+
+}
+
+
+/* =========================
+   RENDER GAME
+========================= */
+
+function render() {
+
+  if (state.done) {
+    return;
+  }
+
+  const scene =
+    scenes[state.node];
+
+  document.getElementById(
+    "location"
+  ).textContent =
+    scene.location;
+
+  document.getElementById(
+    "title"
+  ).textContent =
+    scene.title;
+
+  document.getElementById(
+    "text"
+  ).textContent =
+    scene.text;
+
+
+  document.getElementById(
+    "clues"
+  ).innerHTML =
+    (scene.clues || [])
+      .map(
+        clue =>
+          `<div class="clue">${clue}</div>`
+      )
+      .join("");
+
+
+  const choices =
+    document.getElementById("choices");
+
+  choices.innerHTML = "";
+
+
+  (scene.choices || []).forEach(
+    ([label, next]) => {
+
+      const button =
+        document.createElement("button");
+
+      button.textContent =
+        label;
+
+      button.onclick =
+        () => choose(next);
+
+      choices.appendChild(button);
+
+    }
+  );
+
+
+  document.getElementById(
+    "time"
+  ).textContent =
+    minutesToTime(state.time);
+
+
+  document.getElementById(
+    "progress"
+  ).textContent =
+    progress() + "%";
+
+
+  document.getElementById(
+    "progressBar"
+  ).style.width =
+    progress() + "%";
+
+
+  document.getElementById(
+    "rep"
+  ).textContent =
+    state.rep;
+
+
+  document.getElementById(
+    "evidence"
+  ).innerHTML =
+
+    state.evidence.length
+
+      ? state.evidence
+          .map(
+            evidence =>
+              `<span class="tag">${evidence}</span>`
+          )
+          .join("")
+
+      : `<span class="muted">
+           Nothing yet.
+         </span>`;
+
+
+  document.getElementById(
+    "board"
+  ).innerHTML =
+
+    state.links.length
+
+      ? state.links
+          .map(
+            link =>
+              `<div class="link">${link}</div>`
+          )
+          .join("")
+
+      : `<span class="muted">
+           Connect clues to build a theory.
+         </span>`;
+
+
+  const finalizePanel =
+    document.getElementById(
+      "finalizePanel"
+    );
+
+
+  if (finalizePanel) {
+
+    finalizePanel.classList.toggle(
+      "hidden",
+
+      !(
+        state.node === "board" &&
+        state.links.length >= 2
+      )
+
+    );
+
+  }
+
+}
+
+
+/* =========================
+   CHOICE HANDLING
+========================= */
+
+function choose(next) {
+
+  if (next === "end") {
+
+    finish();
+
+    return;
+
+  }
+
+
+  if (next === "linkNightfall") {
+
+    if (
+      !state.links.includes(
+        "Murder → NIGHTFALL"
+      )
+    ) {
+
+      state.links.push(
+        "Murder → NIGHTFALL"
+      );
+
+    }
+
+    state.rep += 1;
+
+    state.node = "board";
+
+  }
+
+
+  else if (next === "linkMercer") {
+
+    if (
+      !state.links.includes(
+        "Mercer → Crime Scene"
+      )
+    ) {
+
+      state.links.push(
+        "Mercer → Crime Scene"
+      );
+
+    }
+
+    state.rep += 1;
+
+    state.node = "board";
+
+  }
+
+
+  else if (next === "linkMallory") {
+
+    if (
+      !state.links.includes(
+        "Conspiracy → Commissioner Mallory"
+      )
+    ) {
+
+      state.links.push(
+        "Conspiracy → Commissioner Mallory"
+      );
+
+    }
+
+    state.rep += 2;
+
+    state.node = "board";
+
+  }
+
+
+  else if (next === "reviewBoard") {
+
+    state.node =
+      "reviewBoard";
+
+  }
+
+
+  else {
+
+    state.node =
+      next;
+
+  }
+
+
+  state.time += 12;
+
+
+  if (
+    scenes[state.node] &&
+    scenes[state.node].evidence
+  ) {
+
+    addEvidence(
+      scenes[state.node].evidence
+    );
+
+  }
+
+
+  render();
+
+}
+
+
+/* =========================
+   MAIN MENU
+========================= */
+
+function showBriefing() {
+
+  document
+    .getElementById("mainMenu")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("briefingScreen")
+    .classList.remove("hidden");
+
+}
+
+
+/* =========================
+   START GAME
+========================= */
+
+function startInvestigation() {
+
+  document
+    .getElementById("briefingScreen")
+    .classList.add("hidden");
+
+
+  document
+    .querySelector("header")
+    .classList.remove("hidden");
+
+
+  document
+    .getElementById("game")
+    .classList.remove("hidden");
+
+
+  state.node =
+    "scene";
+
+  state.done =
+    false;
+
+
+  render();
+
+}
+
+
+/* =========================
+   RETURN TO INVESTIGATION
+========================= */
+
+function returnToInvestigation() {
+
+  state.node =
+    "board";
+
+
+  document
+    .getElementById("conclusion")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("game")
+    .classList.remove("hidden");
+
+
+  render();
+
+}
+
+
+/* =========================
+   FINALIZE INVESTIGATION
+========================= */
+
+function finalizeInvestigation() {
+
+  if (state.links.length < 2) {
+
+    alert(
+      "You need at least two conclusions on the Link Board before finalizing."
+    );
+
+    return;
+
+  }
+
+
+  state.done =
+    true;
+
+
+  document
+    .getElementById("game")
+    .classList.add("hidden");
+
+
+  const hasNightfall =
+    state.links.includes(
+      "Murder → NIGHTFALL"
+    );
+
+
+  const hasMercer =
+    state.links.includes(
+      "Mercer → Crime Scene"
+    );
+
+
+  const hasMallory =
+    state.links.includes(
+      "Conspiracy → Commissioner Mallory"
+    );
+
+
+  let ending;
+
+
+  /* =========================
+     ENDING 1
+  ========================= */
+
+  if (
+    hasNightfall &&
+    hasMallory &&
+    hasMercer
+  ) {
+
+    ending = {
+
+      title:
+        "THE COMPLETE TRUTH",
+
+      tone:
+        "success",
+
+      summary:
+        "You connected the murder, NIGHTFALL, Mercer, and Commissioner Mallory. Your investigation exposes the entire chain of corruption.",
+
+      aftermath:
+        "Mallory is arrested, Mercer agrees to testify, and NIGHTFALL's operation collapses under the weight of the evidence. Elias Vane's murder becomes the case that finally forces Gotham to confront the corruption inside its own police department."
+
+    };
+
+  }
+
+
+  /* =========================
+     ENDING 2
+  ========================= */
+
+  else if (
+    hasNightfall &&
+    hasMallory
+  ) {
+
+    ending = {
+
+      title:
+        "THE CONSPIRACY EXPOSED",
+
+      tone:
+        "success",
+
+      summary:
+        "You correctly identified NIGHTFALL and traced its leadership to Commissioner Mallory.",
+
+      aftermath:
+        "The commissioner is exposed and the conspiracy begins to unravel. Some accomplices escape, but the central operation is broken. Gotham gets its first real answer about who ordered Vane's death."
+
+    };
+
+  }
+
+
+  /* =========================
+     ENDING 3
+  ========================= */
+
+  else if (
+    hasNightfall &&
+    hasMercer
+  ) {
+
+    ending = {
+
+      title:
+        "THE CORRUPT COP",
+
+      tone:
+        "success",
+
+      summary:
+        "You correctly linked Vane's murder to NIGHTFALL and identified Mercer as a participant.",
+
+      aftermath:
+        "Mercer is arrested and the evidence points toward a larger organization. Without enough proof against its leadership, however, NIGHTFALL disappears into Gotham's shadows."
+
+    };
+
+  }
+
+
+  /* =========================
+     ENDING 4
+  ========================= */
+
+  else if (hasMallory) {
+
+    ending = {
+
+      title:
+        "A DANGEROUS ACCUSATION",
+
+      tone:
+        "danger",
+
+      summary:
+        "You suspected Commissioner Mallory, but your theory did not fully establish the murder's connection to NIGHTFALL.",
+
+      aftermath:
+        "Mallory survives the investigation and publicly dismisses your conclusions. You may have found part of the truth, but Gotham's most dangerous players remain protected."
+
+    };
+
+  }
+
+
+  /* =========================
+     ENDING 5
+  ========================= */
+
+  else {
+
+    ending = {
+
+      title:
+        "THE TRAIL GOES COLD",
+
+      tone:
+        "danger",
+
+      summary:
+        "Your investigation uncovered pieces of the mystery, but your final theory did not connect the evidence strongly enough.",
+
+      aftermath:
+        "The official report remains inconclusive. Vane's murder is eventually filed away, while the people behind NIGHTFALL continue operating in the shadows."
+
+    };
+
+  }
+
+
+  const conclusion =
+    document.getElementById(
+      "conclusion"
+    );
+
+
+  conclusion.classList.remove(
+    "hidden"
+  );
+
+
+  conclusion.innerHTML = `
+
+    <div
+      class="briefing-card case-report"
+    >
+
+      <div class="location">
+        FINAL INVESTIGATION • CASE 01
+      </div>
+
+
+      <h2>
+        ${ending.title}
+      </h2>
+
+
+      <p class="${ending.tone}">
+
+        <strong>
+          ${ending.summary}
+        </strong>
+
+      </p>
+
+
+      <div class="clue">
+
+        <strong>
+          YOUR FINDINGS
+        </strong>
+
+        <br>
+
+        Evidence collected:
+        ${state.evidence.length}
+
+        <br>
+
+        Conclusions reached:
+        ${state.links.length}
+
+        <br>
+
+        Reputation earned:
+        ${state.rep}
+
+      </div>
+
+
+      <div class="clue">
+
+        <strong>
+          WHAT HAPPENED
+        </strong>
+
+        <br>
+
+        Elias Vane discovered information
+        connected to NIGHTFALL and became
+        a target. Your final theory determined
+        how much of the conspiracy you were
+        able to expose.
+
+      </div>
+
+
+      <div class="clue">
+
+        <strong>
+          THE AFTERMATH
+        </strong>
+
+        <br>
+
+        ${ending.aftermath}
+
+      </div>
+
+
+      <p
+        style="
+          margin:26px 10px;
+          font-style:italic;
+          font-size:17px
+        "
+      >
+
+        "Gotham never gives up its secrets
+        easily. Tonight, you made it give up
+        one."
+
+      </p>
+
+
+      <div class="ending-choice">
+
+        <button
+          onclick="returnToInvestigation()"
+        >
+          REVIEW INVESTIGATION
+        </button>
+
+
+        <button
+          onclick="newCase()"
+        >
+          RETURN TO CASE FILES
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================
+   FALLBACK FINISH
+========================= */
+
+function finish() {
+
+  finalizeInvestigation();
+
+}
+
+
+/* =========================
+   NEW CASE / MAIN MENU
+========================= */
+
+function newCase() {
+
+  document
+    .getElementById("conclusion")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("mainMenu")
+    .classList.remove("hidden");
+
+
+  state.done =
+    false;
+
+  state.node =
+    "scene";
+
+  state.time =
+    23 * 60;
+
+  state.rep =
+    0;
+
+  state.evidence =
+    [];
+
+  state.links =
+    [];
+
+  state.flags =
+    {};
+
+  state.boardReady =
+    false;
+
+
+  document
+    .querySelector("header")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("game")
+    .classList.add("hidden");
+
+
+  render();
+
+}
+
+
+/* =========================
+   RESET
+========================= */
+
+document
+  .getElementById("reset")
+  .onclick =
+    () => location.reload();
+
+
+/* =========================
+   INITIALIZE
+========================= */
+
+render();
+
+</script>
+
+</body>
+</html>
